@@ -6,8 +6,7 @@ uniform float rotation : hint_range(0.0, 6.28) = 0.0;
 uniform vec2 light_origin = vec2(0.39, 0.39);
 uniform float time_speed : hint_range(0.0, 1.0);
 uniform float light_border : hint_range(0.0, 1.0) = 0.4;
-uniform vec4 color1 : hint_color;
-uniform vec4 color2 : hint_color;
+uniform vec4 colors[2] : source_color;
 uniform float size = 50.0;
 uniform float seed: hint_range(1, 10);
 uniform float time = 0.0;
@@ -65,14 +64,14 @@ void fragment() {
 		
 	float c1 = crater(uv );
 	float c2 = crater(uv +(light_origin-0.5)*0.03);
-	vec4 col = color1;
+	vec4 col = colors[0];
 	
 	a *= step(0.5, c1);
 	if (c2<c1-(0.5-d_light)*2.0) {
-		col = color2;
+		col = colors[1];
 	}
 	if (d_light > light_border) {
-		col = color2;
+		col = colors[1];
 	} 
 
 	// cut out a circle

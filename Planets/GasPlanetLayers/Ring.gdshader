@@ -11,8 +11,9 @@ uniform float ring_width : hint_range(0.0, 0.15) = 0.1;
 uniform float ring_perspective = 4.0;
 uniform float scale_rel_to_planet = 6.0;
 
-uniform sampler2D colorscheme;
-uniform sampler2D dark_colorscheme;
+uniform int n_colors = 3;
+uniform vec4[3] colors : source_color;
+uniform vec4[3] dark_colors : source_color;
 
 uniform float size = 50.0;
 uniform int OCTAVES : hint_range(0, 20, 1);
@@ -105,12 +106,14 @@ void fragment() {
 	
 	// apply some colors based on final value
 	float posterized = floor((ring+pow(light_d, 2.0)*2.0)*4.0)/4.0;
+	posterized = min(posterized, 2.0);
 	vec4 col;
 	if (posterized <= 1.0) {
-		col = texture(colorscheme, vec2(posterized, uv.y));
+		col = colors[int(posterized * float(n_colors - 1))];
 	} else {
-		col = texture(dark_colorscheme, vec2(posterized-1.0, uv.y));
+		col = dark_colors[int((posterized-1.0) * float(n_colors - 1))];
 	}
+	
 	float ring_a = step(0.28, ring);
 	COLOR = vec4(col.rgb, ring_a * col.a);
 }

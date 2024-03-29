@@ -13,8 +13,9 @@ uniform float light_border_2 : hint_range(0.0, 1.0) = 0.62;
 uniform float bands = 1.0;
 uniform bool should_dither = true;
 
-uniform sampler2D colorscheme;
-uniform sampler2D dark_colorscheme;
+uniform int n_colors = 3;
+uniform vec4[3] colors : source_color;
+uniform vec4[3] dark_colors : source_color;
 
 uniform float size = 50.0;
 uniform int OCTAVES : hint_range(0, 20, 1);
@@ -132,11 +133,11 @@ void fragment() {
 	
 	// finally add colors
 	float posterized = floor(fbm2*4.0)/2.0;
-	vec4 col;
+	vec4 col = vec4(vec3(0.0), 1.0);
 	if (fbm2 < 0.625) {
-		col = texture(colorscheme, vec2(posterized, uv.y));
+		col = colors[int(posterized * float(n_colors - 1))];
 	} else {
-		col = texture(dark_colorscheme, vec2(posterized-1.0, uv.y));
+		col = dark_colors[int((posterized-1.0) * float(n_colors - 1))];
 	}
 		
 	COLOR = vec4(col.rgb, a * col.a);

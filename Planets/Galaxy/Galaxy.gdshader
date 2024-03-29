@@ -6,7 +6,8 @@ uniform float rotation : hint_range(0.0, 6.28) = 0.0;
 uniform float time_speed : hint_range(0.0, 1.0) = 0.2;
 uniform float dither_size : hint_range(0.0, 10.0) = 2.0;
 uniform bool should_dither = true;
-uniform sampler2D colorscheme;
+uniform vec4[7] colors : source_color;
+uniform int n_colors = 6;
 
 uniform float size = 50.0;
 uniform int OCTAVES : hint_range(0, 20, 1);
@@ -17,7 +18,6 @@ uniform float tilt = 4.0;
 uniform float n_layers = 4.0;
 uniform float layer_height = 0.4;
 uniform float zoom = 2.0;
-uniform float n_colors = 7.0;
 uniform float swirl = -9.0;
 
 float rand(vec2 coord) {
@@ -107,8 +107,10 @@ void fragment() {
 	if(should_dither && dith) { // dithering
 		f2 *= 0.94;
 	}
-	f2 = floor(f2 * (n_colors + 1.0)) / n_colors;
-	vec4 col = texture(colorscheme, vec2(f2, 0.0));
+
+	f2 = floor(f2 * (float(n_colors)));
+	f2 = min(f2, float(n_colors));
+	vec4 col = colors[int(f2)];
 	
 	COLOR = vec4(col.rgb, a * col.a);
 }

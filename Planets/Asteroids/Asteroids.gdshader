@@ -5,11 +5,9 @@ uniform float pixels : hint_range(10,100);
 uniform float rotation : hint_range(0.0, 6.28) = 1.0;
 uniform vec2 light_origin = vec2(0.39, 0.39);
 uniform float time_speed : hint_range(0.0, 1.0) = 0.2;
-uniform vec4 color1 : hint_color;
-uniform vec4 color2 : hint_color;
-uniform vec4 color3 : hint_color;
+uniform vec4[3] colors : source_color;
 uniform float size = 50.0;
-uniform int OCTAVES : hint_range(0, 20, 1);
+uniform int octaves : hint_range(0, 20, 1);
 uniform float seed: hint_range(1, 10);
 uniform bool should_dither = true;
 
@@ -35,7 +33,7 @@ float fbm(vec2 coord){
 	float value = 0.0;
 	float scale = 0.5;
 
-	for(int i = 0; i < OCTAVES ; i++){
+	for(int i = 0; i < octaves ; i++){
 		value += noise(coord) * scale;
 		coord *= 2.0;
 		scale *= 0.5;
@@ -103,22 +101,22 @@ void fragment() {
 
 	// now we just assign colors depending on noise values and crater values
 	// base
-	vec4 col = color2;
+	vec4 col = colors[1];
 	
 	// noise
 	if (noise_rel < -0.06 || (noise_rel < -0.04 && (dith || !should_dither))) {
-		col = color1;
+		col = colors[0];
 	}
 	if (noise_rel > 0.05 || (noise_rel > 0.03 && (dith || !should_dither))) {
-		col = color3;
+		col = colors[2];
 	}
 	
 	// crater
 	if (c1 > 0.4)  {
-		col = color2;
+		col = colors[1];
 	}
 	if (c2<c1) {
-		col = color3;
+		col = colors[2];
 	}
 	
 	COLOR = vec4(col.rgb, n_step * col.a);

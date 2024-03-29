@@ -8,7 +8,8 @@ uniform float time_speed : hint_range(-1.0, 1.0) = 0.2;
 uniform float disk_width : hint_range(0.0, 0.15) = 0.1;
 uniform float ring_perspective = 4.0;
 uniform bool should_dither = true;
-uniform sampler2D colorscheme;
+uniform vec4[5] colors : source_color;
+uniform int n_colors = 5;
 
 uniform float size = 50.0;
 uniform int OCTAVES : hint_range(0, 20, 1);
@@ -146,15 +147,17 @@ void fragment() {
 	}
 	
 	// apply some colors based on final value
-	float posterized = floor((disk+light_d)*4.0)/4.0;
-	vec4 col = texture(colorscheme, vec2(posterized, uv.y));
+	float n_posterized = float(n_colors - 1);
+	float posterized = floor((disk+light_d)*n_posterized);
+	posterized = min(posterized, n_posterized);
+	vec4 col = colors[int(posterized)];
 	
-	// this can be toggled on to achieve a more "realistic" blacak hole, with red and blue shifting. This was just me messing around so can probably be more optimized and done cleaner
-//	col.rgb *= 1.0 - pow(uv.x, 1.0);
-//	col.gb *= 1.0 - pow(uv.x, 2.0);
-//	col.b *= 3.0 - pow(uv.x, 4.0);
-//	col.gb *= 2.0 - pow(uv.x, 2.0);
-//	col.rgb *= pow(uv.x, 0.15);
+	// this can be toggled on to achieve a more "realistic" black hole, with red and blue shifting. This was just me messing around so can probably be more optimized and done cleaner
+	//col.rgb *= 1.0 - pow(uv.x, 1.0);
+	//col.gb *= 1.0 - pow(uv.x, 2.0);
+	//col.b *= 3.0 - pow(uv.x, 4.0);
+	//col.gb *= 2.0 - pow(uv.x, 2.0);
+	//col.rgb *= pow(uv.x, 0.15);
 	
 	float disk_a = step(0.15, disk);
 	COLOR = vec4(col.rgb, disk_a * col.a);

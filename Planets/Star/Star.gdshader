@@ -5,7 +5,8 @@ uniform float pixels : hint_range(10,100);
 uniform float time_speed : hint_range(0.0, 1.0) = 0.05;
 uniform float time;
 uniform float rotation : hint_range(0.0, 6.28) = 0.0;
-uniform sampler2D colorramp;
+uniform vec4 colors[4] : source_color;
+uniform int n_colors = 4;
 uniform bool should_dither = true;
 
 uniform float seed: hint_range(1, 10);
@@ -102,8 +103,8 @@ void fragment() {
 	}
 	
 	// constrain values 4 possibilities and then choose color based on those
-	float interpolate = floor(n * 3.0) / 3.0;
-	vec4 col = texture(colorramp, vec2(interpolate, 0.0));
+	float interpolate = floor(n * float(n_colors - 1)) / float(n_colors - 1);
+	vec4 col = colors[int(interpolate * float(n_colors-1))];
 	
 	COLOR = vec4(col.rgb, a * col.a);
 }

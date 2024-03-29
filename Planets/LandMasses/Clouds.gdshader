@@ -2,6 +2,7 @@ shader_type canvas_item;
 render_mode blend_mix;
 
 uniform float pixels : hint_range(10,100);
+uniform float rotation : hint_range(0.0, 6.28) = 0.0;
 uniform float cloud_cover : hint_range(0.0, 1.0);
 uniform vec2 light_origin = vec2(0.39, 0.39);
 uniform float time_speed : hint_range(-1.0, 1.0) = 0.2;
@@ -9,16 +10,13 @@ uniform float stretch : hint_range(1.0,3.0) = 2.0;
 uniform float cloud_curve : hint_range(1.0, 2.0) = 1.3;
 uniform float light_border_1 : hint_range(0.0, 1.0) = 0.52;
 uniform float light_border_2 : hint_range(0.0, 1.0) = 0.62;
-uniform float rotation : hint_range(0.0, 6.28) = 0.0;
 
-uniform vec4 base_color : hint_color;
-uniform vec4 outline_color : hint_color;
-uniform vec4 shadow_base_color : hint_color;
-uniform vec4 shadow_outline_color : hint_color;
+uniform vec4 colors[4] : source_color;
 
 uniform float size = 50.0;
 uniform int OCTAVES : hint_range(0, 20, 1);
 uniform float seed: hint_range(1, 10);
+
 uniform float time = 0.0;
 
 float rand(vec2 coord) {
@@ -51,6 +49,7 @@ float fbm(vec2 coord){
 	}
 	return value;
 }
+
 
 // by Leukbaars from https://www.shadertoy.com/view/4tK3zR
 float circleNoise(vec2 uv) {
@@ -99,33 +98,35 @@ void fragment() {
 	// distance to light source
 	float d_light = distance(uv , light_origin);
 	
-	// cut out a circle
-	float d_circle = distance(uv, vec2(0.5));
+	
 	// stepping over 0.5 instead of 0.49999 makes some pixels a little buggy
-	float a = step(d_circle, 0.49999);
+	float a = step(length(uv-vec2(0.5)), 0.49999);
+	// cut out a circle
+	float d_to_center = distance(uv, vec2(0.5));
 	
 	uv = rotate(uv, rotation);
 	
 	// map to sphere
 	uv = spherify(uv);
-	
 	// slightly make uv go down on the right, and up in the left
 	uv.y += smoothstep(0.0, cloud_curve, abs(uv.x-0.4));
+	
 	
 	float c = cloud_alpha(uv*vec2(1.0, stretch));
 	
 	// assign some colors based on cloud depth & distance from light
-	vec4 col = base_color;
+	vec4 col = colors[0];
 	if (c < cloud_cover + 0.03) {
-		col = outline_color;
+		col = colors[1];
 	}
 	if (d_light + c*0.2 > light_border_1) {
-		col = shadow_base_color;
+		col = colors[2];
 
 	}
 	if (d_light + c*0.2 > light_border_2) {
-		col = shadow_outline_color;
+		col = colors[3];
 	}
 	
+	c *= step(d_to_center, 0.5);
 	COLOR = vec4(col.rgb, step(cloud_cover, c) * a * col.a);
 }
